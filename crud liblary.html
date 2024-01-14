@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Crud local storange library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease-out;
+            transform: translate(0, -50%);
+        }
+
+        .modal.show .modal-dialog {
+            transform: translate(0, 0);
+        }
+    </style>
+</head>
+
+<body class="bg-secondary text-warning">
+    <div class="container mt-5">
+        <h1 class="text-center mb-5 text-warning">Library Management System</h1>
+        <form action="#" id="bookForm">
+            <div class="form-group mb-4">
+                <label for="booktitle">Book Title:</label>
+                <input type="text" id="booktitle" class="form-control" placeholder="Enter Book Title" required>
+            </div>
+            <div class="form-group mb-4">
+                <label for="author">Author:</label>
+                <input type="text" id="author" class="form-control" placeholder="Enter Author Name" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="genretitle">Genre:</label>
+                <input type="text" id="genretitle" class="form-control" placeholder="Enter Book Genre" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="year">Years:</label>
+                <input type="text" id="year" class="form-control" placeholder="Enter Years Title" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" class="form-control" placeholder="Enter Quantity" required>
+            </div>
+            <button class="btn btn-success py-2" type="submit" id="addBtn">Add Book</button>
+            <button class="btn btn-warning py-2" type="button" id="clearBtn">Clear All</button>
+        </form>
+        <br>
+        <div class="notif"></div>
+        <table class="table mt-4" id="bookTable">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Genre</th>
+                    <th>Year</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <div class="modal fade" id="editModal" aria-labelledby="editModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content ">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="editModalLabel">Edit Book</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="#" id="editForm">
+                        <div class="form-group mb-4">
+                            <label for="editBooktitle">Book Title:</label>
+                            <input type="text" id="editBooktitle" class="form-control" placeholder="Enter Book Title"
+                                required>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="editAuthor">Author:</label>
+                            <input type="text" id="editAuthor" class="form-control" placeholder="Enter Author Name"
+                                required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="editGenretitle">Genre:</label>
+                            <input type="text" id="editGenretitle" class="form-control" placeholder="Enter Book Genre"
+                                required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="editYear">Years:</label>
+                            <input type="text" id="editYear" class="form-control" placeholder="Enter Years Title"
+                                required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="editQuantity">Quantity:</label>
+                            <input type="number" id="editQuantity" class="form-control" placeholder="Enter Quantity"
+                                required>
+                        </div>
+                        <input type="hidden" id="editBookId">
+                        <button class="btn btn-success" type="submit" id="editBtn">Save Changes</button>
+                        <button class="btn btn-danger" type="button" id="closeBtn"
+                            data-bs-dismiss="modal">Close</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script>
+        let books = [];
+
+        function addBookToTable(book) {
+            let table = $("#bookTable tbody");
+            table.append(`<tr id="${book.id}">
+        <td>${book.title}</td>
+        <td>${book.author}</td>
+        <td>${book.genre}</td>
+        <td>${book.year}</td>
+        <td>${book.quantity}</td>
+        <td>
+            <button class="btn btn-warning btn-sm editBtn" data-id="${book.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
+            <button class="btn btn-danger btn-sm deleteBtn" data-id="${book.id}">Delete</button>
+        </td>
+    </tr>`);
+        }
+
+        function clearForm() {
+            $("#bookForm")[0].reset();
+        }
+
+        function generateId() {
+            return Math.floor(Math.random() * 1000000);
+        }
+
+        function showAlert(message, alertType) {
+            $(".alert").remove();
+
+            $(".notif").prepend(`
+                <div class="alert alert-${alertType} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `);
+        }
+
+        $(document).on("click", "#clearBtn", clearForm);
+
+        $("#bookForm").submit(function (e) {
+            e.preventDefault();
+            let book = {
+                id: generateId(),
+                title: $("#booktitle").val(),
+                author: $("#author").val(),
+                genre: $("#genretitle").val(),
+                year: $("#year").val(),
+                quantity: $("#quantity").val(),
+            };
+            books.push(book);
+            addBookToTable(book);
+            clearForm();
+            showAlert("Book added successfully!", "success");
+        });
+
+        $(document).on("click", ".editBtn", function () {
+            let bookId = $(this).data("id");
+            let bookIndex = books.findIndex(b => b.id == bookId);
+            let book = books[bookIndex]
+            $("#editBooktitle").val(book.title);
+            $("#editAuthor").val(book.author);
+            $("#editGenretitle").val(book.genre);
+            $("#editYear").val(book.year);
+            $("#editQuantity").val(book.quantity);
+            $("#editBookId").val(book.id);
+        });
+
+        $("#editForm").submit(function (e) {
+            e.preventDefault();
+            let editedBookId = $("#editBookId").val();
+            let editedBook = books.find(b => b.id == editedBookId);
+            editedBook.title = $("#editBooktitle").val();
+            editedBook.author = $("#editAuthor").val();
+            editedBook.genre = $("#editGenretitle").val();
+            editedBook.year = $("#editYear").val();
+            editedBook.quantity = $("#editQuantity").val();
+            $("#" + editedBookId).html(`
+        <td>${editedBook.title}</td>
+        <td>${editedBook.author}</td>
+        <td>${editedBook.genre}</td>
+        <td>${editedBook.year}</td>
+        <td>${editedBook.quantity}</td>
+        <td>
+            <button class="btn btn-warning btn-sm editBtn" data-id="${editedBook.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
+            <button class="btn btn-danger btn-sm deleteBtn" data-id="${editedBook.id}">Delete</button>
+        </td>`);
+
+            $("#editModal").modal("hide");
+            alert("Book updated successfully!", "success");
+        });
+
+        $(document).on("click", ".deleteBtn", function () {
+            let bookId = $(this).data("id");
+            $("#" + bookId).remove();
+            books = books.filter(b => b.id != bookId);
+            showAlert("Book deleted successfully!", "danger");
+        });
+    </script>
+</body>
+
+</html>
